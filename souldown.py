@@ -1,4 +1,5 @@
 import os
+import re
 import yt_dlp
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
@@ -13,7 +14,8 @@ QUALITY_OPTIONS = {
     "Alta calidad (320kbps)": "bestaudio[ext=m4a]/bestaudio/bestaudio[abr<=320]"
 }
 
-album_queue = []
+song_queue = []
+
 
 def agregar_a_cola():
     url = url_entry.get()
@@ -22,68 +24,81 @@ def agregar_a_cola():
     if not url:
         messagebox.showerror("Error", "Por favor, introduce una URL de YouTube")
         return
-    
+
     if not calidad:
         messagebox.showerror("Error", "Por favor, selecciona una calidad de audio")
         return
 
-    album_queue.append((url, calidad))
+    song_queue.append((url, calidad))
     actualizar_lista()
     url_entry.delete(0, tk.END)
 
+
 def actualizar_lista():
     queue_list.delete(0, tk.END)
-    for i, (url, calidad) in enumerate(album_queue):
+    for i, (url, calidad) in enumerate(song_queue):
         queue_list.insert(tk.END, f"{i+1}. {url} - {calidad}")
 
+
 def descargar_cola():
-    if not album_queue:
-        messagebox.showerror("Error", "No hay álbumes en cola")
+    if not song_queue:
+        messagebox.showerror("Error", "No hay canciones en cola")
         return
 
     folder = filedialog.askdirectory(title="Selecciona la carpeta de destino")
     if not folder:
         return
 
-    total_albums = len(album_queue)
-    album_progress["maximum"] = total_albums
+    total_songs = len(song_queue)
+    song_progress["maximum"] = total_songs
     global_progress["maximum"] = 100
 
-    for i, (url, calidad) in enumerate(album_queue):
-        album_progress["value"] = i
-        descargar_album(url, calidad, folder)
+    for i, (url, calidad) in enumerate(song_queue):
+        song_progress["value"] = i + 1
+        descargar_cancion(url, calidad, folder)
         root.update_idletasks()
-    
-    messagebox.showinfo("Éxito", "Todos los álbumes han sido descargados")
-    album_queue.clear()
+
+    messagebox.showinfo("Éxito", "Todas las canciones han sido descargadas")
+    song_queue.clear()
     actualizar_lista()
-    album_progress["value"] = 0
+    song_progress["value"] = 0
     global_progress["value"] = 0
 
-def descargar_album(url, calidad, folder):
+
+def descargar_cancion(url, calidad, folder):
     ydl_opts = {
         "format": QUALITY_OPTIONS[calidad],
-        "outtmpl": os.path.join(folder, "%(uploader)s", "%(playlist_title)s", "%(track_number)s - %(title)s.%(ext)s"),
+        "outtmpl": os.path.join(folder, "%(title)s.%(ext)s"),
         "writethumbnail": True,
         "postprocessors": [
             {"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": calidad.split()[2]},
             {"key": "EmbedThumbnail"},
             {"key": "FFmpegMetadata"}
         ],
-        "progress_hooks": [actualizar_progreso]
+        "progress_hooks": [actualizar_progreso],
+        "noprogress": True,  # Evita códigos ANSI en la salida
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-    
+
     descargar_caratula(info, folder)
     organizar_archivos(folder)
 
+
 def actualizar_progreso(d):
     if d["status"] == "downloading":
-        porcentaje = d.get("_percent_str", "0%").strip("%")
-        global_progress["value"] = float(porcentaje)
-        root.update_idletasks()
+        porcentaje = d.get("_percent_str", "0%")
+
+        # Eliminar códigos de color ANSI
+        porcentaje = re.sub(r"\x1b\[[0-9;]*m", "", porcentaje).strip("%")
+
+        try:
+            global_progress["value"] = float(porcentaje)
+            root.update_idletasks()
+        except ValueError:
+            print(f"Error al convertir porcentaje: {porcentaje}")
+
 
 def descargar_caratula(info, folder):
     thumbnail_url = info.get("thumbnail")
@@ -95,21 +110,22 @@ def descargar_caratula(info, folder):
         response.raise_for_status()
         image_data = BytesIO(response.content)
 
-        for root, _, files in os.walk(folder):
+        for root_dir, _, files in os.walk(folder):
             for file in files:
                 if file.endswith(".mp3"):
-                    file_path = os.path.join(root, file)
+                    file_path = os.path.join(root_dir, file)
                     audio = MP3(file_path, ID3=ID3)
                     audio.tags.add(APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=image_data.getvalue()))
                     audio.save()
     except Exception as e:
         print(f"Error al descargar carátula: {e}")
 
+
 def organizar_archivos(folder):
-    for root, _, files in os.walk(folder):
+    for root_dir, _, files in os.walk(folder):
         for file in files:
             if file.endswith(".mp3"):
-                file_path = os.path.join(root, file)
+                file_path = os.path.join(root_dir, file)
                 try:
                     audio = MP3(file_path, ID3=ID3)
                     artist = audio.tags.get("TPE1", "Desconocido").text[0]
@@ -121,8 +137,9 @@ def organizar_archivos(folder):
                 except Exception as e:
                     print(f"Error organizando {file}: {e}")
 
+
 root = tk.Tk()
-root.title("SoulDown - Descargador de Álbumes")
+root.title("SoulDown - Descargador de Canciones")
 root.geometry("600x450")
 root.configure(bg="#121212")
 
@@ -132,7 +149,7 @@ style.configure("TLabel", font=("Arial", 12), background="#121212", foreground="
 style.configure("TEntry", font=("Arial", 12), fieldbackground="#1E1E1E", foreground="white")
 style.configure("TListbox", font=("Arial", 12), background="#1E1E1E", foreground="white")
 
-ttk.Label(root, text="URL del álbum o playlist:").pack(pady=5)
+ttk.Label(root, text="URL de la canción:").pack(pady=5)
 url_entry = ttk.Entry(root, width=50)
 url_entry.pack(pady=5)
 
@@ -148,9 +165,9 @@ queue_list.pack(pady=5)
 ttk.Button(root, text="Agregar a la cola", command=agregar_a_cola).pack(pady=5)
 ttk.Button(root, text="Descargar cola", command=descargar_cola).pack(pady=5)
 
-ttk.Label(root, text="Progreso del álbum actual:").pack(pady=5)
-album_progress = ttk.Progressbar(root, length=400)
-album_progress.pack(pady=5)
+ttk.Label(root, text="Progreso de la canción actual:").pack(pady=5)
+song_progress = ttk.Progressbar(root, length=400)
+song_progress.pack(pady=5)
 
 ttk.Label(root, text="Progreso total:").pack(pady=5)
 global_progress = ttk.Progressbar(root, length=400)
