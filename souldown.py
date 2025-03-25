@@ -140,7 +140,7 @@ def organizar_archivos(folder):
 
 root = tk.Tk()
 root.title("SoulDown - S3RGI09")
-root.geometry("600x450")
+root.geometry("850x450")
 root.configure(bg="#121212")
 
 style = ttk.Style()
@@ -166,8 +166,8 @@ url_entry = ttk.Entry(root, width=50)
 url_entry.grid(row=0, column=1, padx=10, pady=5)
 
 ttk.Label(root, text="Selecciona la calidad de audio:").grid(row=1, column=0, sticky="w", padx=10, pady=5)
-quality_var = tk.StringVar()
-quality_menu = ttk.OptionMenu(root, quality_var, *QUALITY_OPTIONS.keys())
+quality_var = tk.StringVar(value="Baja calidad (96kbps)")  # Valor inicial corregido
+quality_menu = ttk.OptionMenu(root, quality_var, "Calidad media (128kbps)", *QUALITY_OPTIONS.keys())
 quality_menu.grid(row=1, column=1, padx=10, pady=5)
 
 ttk.Label(root, text="Cola de descargas:").grid(row=2, column=0, sticky="w", padx=10, pady=5)
