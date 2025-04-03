@@ -1,63 +1,62 @@
-![Versión](https://img.shields.io/badge/version-Beta3.0-blue)
-![by](https://img.shields.io/badge/by-S3RGI09-orange)
-![Licencia](https://img.shields.io/badge/license-Apache2.0-green)
-# SoulDown - S3RGI09
-<img src="https://github.com/user-attachments/assets/6e1c5313-af7a-4a8e-9ef2-52825c9e577d" alt="souldown" width="200">
+![Version](https://img.shields.io/badge/version-Beta3.0-blue)  
+![by](https://img.shields.io/badge/by-S3RGI09-orange)  
+![License](https://img.shields.io/badge/license-Apache2.0-green)  
 
+# SoulDown - S3RGI09  
+<img src="https://github.com/user-attachments/assets/6e1c5313-af7a-4a8e-9ef2-52825c9e577d" alt="souldown" width="200">  
 
-**SoulDown** es una aplicación de escritorio en Python que permite descargar álbumes completos o canciones individuales desde YouTube. Ofrece opciones de calidad de audio y organiza automáticamente las descargas en carpetas estructuradas por artista y álbum. Además, permite gestionar una cola de descargas con seguimiento del progreso individual y total.
+**SoulDown** is a Python desktop application that allows you to download full albums or individual songs from YouTube. It offers audio quality options and automatically organizes downloads into structured folders by artist and album. Additionally, it lets you manage a download queue with individual and total progress tracking.  
 
-**Puedes acceder a la web [aquí](https://s3rgi09.github.io/SoulDown/)**
+**You can access the website [here](https://s3rgi09.github.io/SoulDown/)**  
 
-![Captura desde 2025-03-24 23-54-08](https://github.com/user-attachments/assets/68242f10-57e7-4d13-ab91-7bbb243b647f)
+![Screenshot from 2025-03-24 23-54-08](https://github.com/user-attachments/assets/68242f10-57e7-4d13-ab91-7bbb243b647f)  
 
+## Main Features  
 
-## Características Principales
+- **Full album downloads**: Enter a YouTube playlist or album URL to download all songs.  
+- **Individual song downloads**: Select specific songs from an album to download.  
+- **Audio quality options**: Choose between low (96kbps), medium (128kbps), and high quality (320kbps).  
+- **Automatic organization**: Songs are saved in a structured folder format `Artist/Album/Song.mp3`.  
+- **Cover art download**: Automatically downloads and assigns album covers to each song.  
+- **Download queue management**: Add multiple albums to a queue and download them sequentially.  
+- **Progress bars**: View both individual and total queue download progress.  
+- **Customizable interface**: A graphical interface with a blue and black theme for a visually pleasant experience.  
 
-- **Descarga de álbumes completos**: Ingresa la URL de una playlist o álbum de YouTube para descargar todas las canciones.
-- **Descarga de canciones individuales**: Selecciona canciones específicas de un álbum para su descarga.
-- **Opciones de calidad de audio**: Elige entre baja (96kbps), media (128kbps) y alta calidad (320kbps).
-- **Organización automática**: Las canciones se guardan en una estructura de carpetas `Artista/Álbum/Canción.mp3`.
-- **Descarga de carátulas**: Descarga y asigna automáticamente la carátula del álbum a cada canción.
-- **Gestión de cola de descargas**: Añade múltiples álbumes a una cola y descárgalos secuencialmente.
-- **Barras de progreso**: Visualiza el progreso de la descarga actual y el progreso total de la cola.
-- **Interfaz personalizable**: Interfaz gráfica basada en colores azules y negros para una experiencia visual agradable.
+## System Requirements  
 
-## Requisitos del Sistema
+- **Operating System**: Windows, macOS, or Linux with Python 3.x support.  
+- **Python**: Version 3.6 or higher.  
+- **Dependencies**: Required libraries are listed in the `requirements.txt` file.  
 
-- **Sistema Operativo**: Windows, macOS o Linux con soporte para Python 3.x.
-- **Python**: Versión 3.6 o superior.
-- **Dependencias**: Las bibliotecas necesarias se detallan en el archivo `requirements.txt`.
+## Installation  
 
-## Instalación
+1. **Clone or download the repository**: Get the SoulDown source code from the official repository.  
+2. **Navigate to the project directory**:  
+   - Open a terminal or command prompt.  
+   - Go to the directory where the project is located.  
+3. **Install dependencies**:  
+   - Make sure `pip` is installed.  
+   - Run `pip install -r requirements.txt` to install all necessary dependencies.  
 
-1. **Clona o descarga el repositorio**: Obtén el código fuente de SoulDown desde el repositorio oficial.
-2. **Navega al directorio del proyecto**:
-   - Abre una terminal o línea de comandos.
-   - Dirígete al directorio donde se encuentra el proyecto.
-3. **Instala las dependencias**:
-   - Asegúrate de tener `pip` instalado.
-   - Ejecuta el comando `pip install -r requirements.txt` para instalar todas las dependencias necesarias.
+## Usage  
 
-## Uso
+1. **Run the application**:  
+   - In the terminal, inside the project directory, run `python souldown.py`.  
+2. **Add an album to the queue**:  
+   - In the graphical interface, enter the YouTube album or playlist URL in the designated field.  
+   - Select the desired audio quality.  
+   - Click "Add to Queue" to add the album to the pending downloads list.  
+3. **Manage the queue**:  
+   - View the queued albums in the designated section.  
+   - Reorder the list by dragging items as needed.  
+4. **Download the queue**:  
+   - Click "Download Queue" to start downloading.  
+   - Monitor the progress bars for individual and total queue download tracking.  
 
-1. **Ejecuta la aplicación**:
-   - En la terminal, dentro del directorio del proyecto, ejecuta `python souldown.py`.
-2. **Añadir álbum a la cola**:
-   - En la interfaz gráfica, ingresa la URL del álbum o playlist de YouTube en el campo correspondiente.
-   - Selecciona la calidad de audio deseada.
-   - Haz clic en "Agregar a la cola" para añadir el álbum a la lista de descargas pendientes.
-3. **Gestionar la cola**:
-   - Visualiza la lista de álbumes en cola en la sección designada.
-   - Reordena la lista arrastrando los elementos según tu preferencia.
-4. **Descargar cola**:
-   - Haz clic en "Descargar cola" para iniciar las descargas.
-   - Observa las barras de progreso para el seguimiento de las descargas individuales y del progreso total de la cola.
+>[!warning]  
+>This tool can be used for copyright infringement and piracy.  
+>It is your responsibility to use it ethically and legally.  
 
->[!warning]
->Esta herramienta puede ser usada para la infracción de derechos de autor y piratería.
->Esta bajo tu responsabilidad usarla de manera etica y legal
+## License  
 
-## Licencia
-
-Este proyecto está bajo la Licencia Apache 2.0. Consulta el archivo `LICENSE` para más detalles.
+This project is licensed under the Apache 2.0 License. See the `LICENSE` file for more details.
