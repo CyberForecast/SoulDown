@@ -7,6 +7,8 @@
 
 **SoulDown** es una aplicación de escritorio en Python que permite descargar álbumes completos o canciones individuales desde YouTube. Ofrece opciones de calidad de audio y organiza automáticamente las descargas en carpetas estructuradas por artista y álbum. Además, permite gestionar una cola de descargas con seguimiento del progreso individual y total.
 
+**Puedes acceder a la web [aquí](https://s3rgi09.github.io/SoulDown/)**
+
 ![Captura desde 2025-03-24 23-54-08](https://github.com/user-attachments/assets/68242f10-57e7-4d13-ab91-7bbb243b647f)
 
 
