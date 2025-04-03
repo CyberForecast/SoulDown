@@ -54,6 +54,10 @@
    - Haz clic en "Descargar cola" para iniciar las descargas.
    - Observa las barras de progreso para el seguimiento de las descargas individuales y del progreso total de la cola.
 
+>[!warning]
+>Esta herramienta puede ser usada para la infracción de derechos de autor y piratería.
+>Esta bajo tu responsabilidad usarla de manera etica y legal
+
 ## Licencia
 
 Este proyecto está bajo la Licencia Apache 2.0. Consulta el archivo `LICENSE` para más detalles.
