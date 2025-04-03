@@ -9,43 +9,43 @@ import requests
 from io import BytesIO
 
 QUALITY_OPTIONS = {
-    "Baja calidad (96kbps)": "bestaudio[ext=m4a]/worstaudio[ext=mp3]/bestaudio[abr<=96]",
-    "Calidad media (128kbps)": "bestaudio[ext=m4a]/bestaudio[abr<=128]",
-    "Alta calidad (320kbps)": "bestaudio[ext=m4a]/bestaudio/bestaudio[abr<=320]"
+    "Low quality (96kbps)": "bestaudio[ext=m4a]/worstaudio[ext=mp3]/bestaudio[abr<=96]",
+    "Medium quality (128kbps)": "bestaudio[ext=m4a]/bestaudio[abr<=128]",
+    "High quality (320kbps)": "bestaudio[ext=m4a]/bestaudio/bestaudio[abr<=320]"
 }
 
 song_queue = []
 
 
-def agregar_a_cola():
+def add_to_queue():
     url = url_entry.get()
-    calidad = quality_var.get()
+    quality = quality_var.get()
 
     if not url:
-        messagebox.showerror("Error", "Por favor, introduce una URL de YouTube")
+        messagebox.showerror("Error", "Please enter a YouTube URL")
         return
 
-    if not calidad:
-        messagebox.showerror("Error", "Por favor, selecciona una calidad de audio")
+    if not quality:
+        messagebox.showerror("Error", "Please select an audio quality")
         return
 
-    song_queue.append((url, calidad))
-    actualizar_lista()
+    song_queue.append((url, quality))
+    update_list()
     url_entry.delete(0, tk.END)
 
 
-def actualizar_lista():
+def update_list():
     queue_list.delete(0, tk.END)
-    for i, (url, calidad) in enumerate(song_queue):
-        queue_list.insert(tk.END, f"{i+1}. {url} - {calidad}")
+    for i, (url, quality) in enumerate(song_queue):
+        queue_list.insert(tk.END, f"{i+1}. {url} - {quality}")
 
 
-def descargar_cola():
+def download_queue():
     if not song_queue:
-        messagebox.showerror("Error", "No hay canciones en cola")
+        messagebox.showerror("Error", "There are no songs in the queue")
         return
 
-    folder = filedialog.askdirectory(title="Selecciona la carpeta de destino")
+    folder = filedialog.askdirectory(title="Select the destination folder")
     if not folder:
         return
 
@@ -53,54 +53,54 @@ def descargar_cola():
     song_progress["maximum"] = total_songs
     global_progress["maximum"] = 100
 
-    for i, (url, calidad) in enumerate(song_queue):
+    for i, (url, quality) in enumerate(song_queue):
         song_progress["value"] = i + 1
-        descargar_cancion(url, calidad, folder)
+        download_song(url, quality, folder)
         root.update_idletasks()
 
-    messagebox.showinfo("Éxito", "Todas las canciones han sido descargadas")
+    messagebox.showinfo("Success", "All songs have been downloaded")
     song_queue.clear()
-    actualizar_lista()
+    update_list()
     song_progress["value"] = 0
     global_progress["value"] = 0
 
 
-def descargar_cancion(url, calidad, folder):
+def download_song(url, quality, folder):
     ydl_opts = {
-        "format": QUALITY_OPTIONS[calidad],
+        "format": QUALITY_OPTIONS[quality],
         "outtmpl": os.path.join(folder, "%(title)s.%(ext)s"),
         "writethumbnail": True,
         "postprocessors": [
-            {"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": calidad.split()[2]},
+            {"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": quality.split()[2]},
             {"key": "EmbedThumbnail"},
             {"key": "FFmpegMetadata"}
         ],
-        "progress_hooks": [actualizar_progreso],
-        "noprogress": True,  # Evita códigos ANSI en la salida
+        "progress_hooks": [update_progress],
+        "noprogress": True,  # Prevents ANSI codes in output
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
 
-    descargar_caratula(info, folder)
-    organizar_archivos(folder)
+    download_cover(info, folder)
+    organize_files(folder)
 
 
-def actualizar_progreso(d):
+def update_progress(d):
     if d["status"] == "downloading":
-        porcentaje = d.get("_percent_str", "0%")
+        percentage = d.get("_percent_str", "0%")
 
-        # Eliminar códigos de color ANSI
-        porcentaje = re.sub(r"\x1b\[[0-9;]*m", "", porcentaje).strip("%")
+        # Remove ANSI color codes
+        percentage = re.sub(r"\x1b\[[0-9;]*m", "", percentage).strip("%")
 
         try:
-            global_progress["value"] = float(porcentaje)
+            global_progress["value"] = float(percentage)
             root.update_idletasks()
         except ValueError:
-            print(f"Error al convertir porcentaje: {porcentaje}")
+            print(f"Error converting percentage: {percentage}")
 
 
-def descargar_caratula(info, folder):
+def download_cover(info, folder):
     thumbnail_url = info.get("thumbnail")
     if not thumbnail_url:
         return
@@ -118,24 +118,24 @@ def descargar_caratula(info, folder):
                     audio.tags.add(APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=image_data.getvalue()))
                     audio.save()
     except Exception as e:
-        print(f"Error al descargar carátula: {e}")
+        print(f"Error downloading cover: {e}")
 
 
-def organizar_archivos(folder):
+def organize_files(folder):
     for root_dir, _, files in os.walk(folder):
         for file in files:
             if file.endswith(".mp3"):
                 file_path = os.path.join(root_dir, file)
                 try:
                     audio = MP3(file_path, ID3=ID3)
-                    artist = audio.tags.get("TPE1", "Desconocido").text[0]
-                    album = audio.tags.get("TALB", "Desconocido").text[0]
+                    artist = audio.tags.get("TPE1", "Unknown").text[0]
+                    album = audio.tags.get("TALB", "Unknown").text[0]
 
                     album_path = os.path.join(folder, artist, album)
                     os.makedirs(album_path, exist_ok=True)
                     os.rename(file_path, os.path.join(album_path, file))
                 except Exception as e:
-                    print(f"Error organizando {file}: {e}")
+                    print(f"Error organizing {file}: {e}")
 
 
 root = tk.Tk()
@@ -149,7 +149,7 @@ style.configure("TLabel", font=("Arial", 12), background="#121212", foreground="
 style.configure("TEntry", font=("Arial", 12), fieldbackground="#1E1E1E", foreground="white")
 style.configure("TListbox", font=("Arial", 12), background="#1E1E1E", foreground="white")
 
-# Configurar el grid
+# Configure grid
 root.grid_rowconfigure(0, weight=1)
 root.grid_rowconfigure(1, weight=1)
 root.grid_rowconfigure(2, weight=1)
@@ -161,27 +161,27 @@ root.grid_rowconfigure(7, weight=1)
 root.grid_columnconfigure(0, weight=1)
 root.grid_columnconfigure(1, weight=3)
 
-ttk.Label(root, text="URL de la canción:").grid(row=0, column=0, sticky="w", padx=10, pady=5)
+ttk.Label(root, text="Song URL:").grid(row=0, column=0, sticky="w", padx=10, pady=5)
 url_entry = ttk.Entry(root, width=50)
 url_entry.grid(row=0, column=1, padx=10, pady=5)
 
-ttk.Label(root, text="Selecciona la calidad de audio:").grid(row=1, column=0, sticky="w", padx=10, pady=5)
-quality_var = tk.StringVar(value="Baja calidad (96kbps)")  # Valor inicial corregido
-quality_menu = ttk.OptionMenu(root, quality_var, "Calidad media (128kbps)", *QUALITY_OPTIONS.keys())
+ttk.Label(root, text="Select audio quality:").grid(row=1, column=0, sticky="w", padx=10, pady=5)
+quality_var = tk.StringVar(value="Low quality (96kbps)")  # Corrected initial value
+quality_menu = ttk.OptionMenu(root, quality_var, "Medium quality (128kbps)", *QUALITY_OPTIONS.keys())
 quality_menu.grid(row=1, column=1, padx=10, pady=5)
 
-ttk.Label(root, text="Cola de descargas:").grid(row=2, column=0, sticky="w", padx=10, pady=5)
+ttk.Label(root, text="Download queue:").grid(row=2, column=0, sticky="w", padx=10, pady=5)
 queue_list = tk.Listbox(root, width=70, height=6, bg="#1E1E1E", fg="white")
 queue_list.grid(row=2, column=1, padx=10, pady=5)
 
-ttk.Button(root, text="Agregar a la cola", command=agregar_a_cola).grid(row=3, column=0, columnspan=2, pady=5)
-ttk.Button(root, text="Descargar cola", command=descargar_cola).grid(row=4, column=0, columnspan=2, pady=5)
+ttk.Button(root, text="Add to queue", command=add_to_queue).grid(row=3, column=0, columnspan=2, pady=5)
+ttk.Button(root, text="Download queue", command=download_queue).grid(row=4, column=0, columnspan=2, pady=5)
 
-ttk.Label(root, text="Progreso total:").grid(row=5, column=0, sticky="w", padx=10, pady=5)
+ttk.Label(root, text="Total progress:").grid(row=5, column=0, sticky="w", padx=10, pady=5)
 song_progress = ttk.Progressbar(root, length=400)
 song_progress.grid(row=5, column=1, padx=10, pady=5)
 
-ttk.Label(root, text="Progreso de la cancion:").grid(row=6, column=0, sticky="w", padx=10, pady=5)
+ttk.Label(root, text="Song progress:").grid(row=6, column=0, sticky="w", padx=10, pady=5)
 global_progress = ttk.Progressbar(root, length=400)
 global_progress.grid(row=6, column=1, padx=10, pady=5)
 
