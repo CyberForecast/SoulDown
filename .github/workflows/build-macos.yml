@@ -41,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: SoulDown-macOS
-          path: ./dist/souldown  # Ruta ajustada para reflejar el nombre real del binario
+          path: ./dist/*
