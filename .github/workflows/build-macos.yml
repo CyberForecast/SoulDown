@@ -3,49 +3,42 @@ name: Build SoulDown for macOS
 on:
   push:
     branches:
-      - main  # Ejecuta el flujo de trabajo cuando haya un push a la rama principal
+      - main
   pull_request:
     branches:
-      - main  # También se ejecuta cuando se haga un pull request hacia la rama principal
+      - main
 
 jobs:
   build:
-    runs-on: macos-latest  # Esto indica que usaremos el entorno de macOS para la compilación
+    runs-on: macos-latest
     
     steps:
-      # Paso 1: Configurar Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'  # Aquí puedes especificar la versión de Python que estás utilizando en tu proyecto
+          python-version: '3.9'
 
-      # Paso 2: Clonar el repositorio
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Paso 3: Instalar dependencias de Python
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt  # Instala todas las dependencias de tu proyecto
+          pip install -r requirements.txt
 
-      # Paso 4: Instalar PyInstaller
       - name: Install PyInstaller
         run: |
           pip install pyinstaller
 
-      # Paso 5: Compilar el binario con PyInstaller
       - name: Build the macOS binary
         run: |
-          pyinstaller --onefile --windowed souldown.py  # Aquí ajusta si deseas opciones adicionales en la compilación
+          pyinstaller --onefile --windowed souldown.py
 
-      # Paso 6: Listar los archivos generados en la carpeta dist
       - name: List files in dist folder
-        run: ls -la ./dist  # Para verificar que el binario se generó correctamente
+        run: ls -la ./dist
 
-      # Paso 7: Subir el binario como un artefacto (opcional)
       - name: Upload macOS binary
         uses: actions/upload-artifact@v3
         with:
           name: SoulDown-macOS
-          path: ./dist/SoulDown.app  # Ajusta esto según el nombre exacto del archivo generado
+          path: ./dist/souldown  # Ruta ajustada para reflejar el nombre real del binario
