@@ -47,7 +47,7 @@
         }
         section {
             padding: 20px;
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         .feature-list {
@@ -57,7 +57,7 @@
             justify-content: space-between;
         }
         .feature {
-            flex-basis: 48%;
+            flex: 1 1 45%;
             background-color: #222;
             padding: 20px;
             border-radius: 8px;
@@ -80,6 +80,26 @@
         .logo {
             width: 180px;
             margin: 20px auto;
+        }
+
+        /* Media queries for larger screens */
+        @media (min-width: 768px) {
+            .feature {
+                flex: 1 1 30%;
+            }
+            section {
+                padding: 40px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            header {
+                padding: 60px;
+            }
+            .cta-button {
+                padding: 20px 40px;
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
