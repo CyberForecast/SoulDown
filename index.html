@@ -3,102 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoulDown - Download Albums & Songs from YouTube</title>
+    <title>SoulDown - Music is Your Soul, Download It</title>
     <style>
         body {
-            background-color: #000;
-            color: #fff;
+            margin: 0;
             font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            text-align: center;
-            padding: 40px;
             background-color: #111;
-        }
-        h1, h2 {
-            color: #00f;
-            margin: 0;
-        }
-        p {
-            color: #ccc;
-            font-size: 1.1rem;
+            color: #fff;
             line-height: 1.6;
         }
-        .hero {
-            background-color: #111;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
+        header {
+            position: relative;
+            text-align: center;
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #00f, #8a2be2);
         }
-        .cta-button {
-            display: inline-block;
-            background-color: #00f;
+        header h1 {
+            font-size: 4rem;
+            color: #fff;
+            margin: 0;
+            font-weight: bold;
+        }
+        header p {
+            font-size: 1.3rem;
+            color: #ddd;
+            margin-top: 15px;
+        }
+        header .cta-button {
+            background-color: #00b;
             color: #fff;
             padding: 15px 30px;
-            text-decoration: none;
-            border-radius: 5px;
             font-size: 1.2rem;
+            text-decoration: none;
+            border-radius: 8px;
             margin-top: 20px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
         }
-        .cta-button:hover {
-            background-color: #00b;
+        header .cta-button:hover {
+            background-color: #005cbf;
         }
-        section {
-            padding: 20px;
+        header .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+        main {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        .hero {
+            text-align: center;
+            padding: 40px;
+            background-color: #222;
+            border-radius: 10px;
+            margin: 20px auto;
+        }
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+            font-weight: bold;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .hero img {
+            max-width: 70%;
+            border-radius: 8px;
+            margin-top: 20px;
         }
         .feature-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            justify-content: space-between;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 50px;
         }
         .feature {
-            flex: 1 1 45%;
-            background-color: #222;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        footer {
-            background-color: #111;
+            background-color: #333;
+            padding: 25px;
+            border-radius: 10px;
+            width: 30%;
             text-align: center;
-            padding: 20px;
-            margin-top: 40px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #00f;
+            font-weight: bold;
+        }
+        .feature p {
+            font-size: 1.1rem;
             color: #ccc;
         }
-        img {
-            width: 100%;
-            border-radius: 8px;
-            margin-top: 20px;
+        .feature:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
         }
-        .badges img {
-            margin: 5px;
+        footer {
+            background-color: #222;
+            padding: 20px;
+            text-align: center;
+            color: #bbb;
+            margin-top: 50px;
         }
-        .logo {
-            width: 180px;
-            margin: 20px auto;
+        footer a {
+            color: #00f;
+            text-decoration: none;
         }
-
-        /* Media queries for larger screens */
-        @media (min-width: 768px) {
+        footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
             .feature {
-                flex: 1 1 30%;
-            }
-            section {
-                padding: 40px;
+                width: 45%;
             }
         }
-
-        @media (min-width: 1024px) {
-            header {
-                padding: 60px;
+        @media (max-width: 480px) {
+            .feature {
+                width: 100%;
             }
-            .cta-button {
-                padding: 20px 40px;
-                font-size: 1.5rem;
+            header h1 {
+                font-size: 2.5rem;
+            }
+            header p {
+                font-size: 1rem;
             }
         }
     </style>
@@ -107,8 +142,7 @@
 
 <header>
     <img class="logo" src="https://github.com/user-attachments/assets/6e1c5313-af7a-4a8e-9ef2-52825c9e577d" alt="SoulDown Logo">
-    <h1>SoulDown</h1>
-    <p>The Ultimate YouTube Music Downloader</p>
+    <p><strong>Music is Your Soul, Download It</strong></p>
     <a href="https://github.com/S3RGI09/SoulDown/releases" class="cta-button">Download Now</a>
 </header>
 
@@ -116,47 +150,49 @@
     <section class="hero">
         <h2>What is SoulDown?</h2>
         <p>SoulDown is a powerful desktop application written in Python that lets you effortlessly download entire albums or individual songs from YouTube. Whether you’re looking to archive your favorite music or simply download a single track, SoulDown offers you the flexibility to do so in a variety of audio qualities. Plus, with automatic album organization and custom download queues, your music collection will be perfectly structured and easy to manage.</p>
-        <img src="https://github.com/user-attachments/assets/bb899569-dad9-4ae3-ac8b-5751706e25f9" alt="souldown" width="600"> 
+        <img src="https://github.com/user-attachments/assets/bb899569-dad9-4ae3-ac8b-5751706e25f9" alt="SoulDown Interface">
     </section>
 
     <section>
-        <h2>Key Features</h2>
         <div class="feature-list">
             <div class="feature">
                 <h3>Complete Album Downloads</h3>
-                <p>Simply enter the URL of a YouTube playlist or album and download all the tracks in one go. Perfect for music lovers.</p>
+                <p>Download entire albums or playlists with a single click, ideal for music collectors.</p>
             </div>
             <div class="feature">
                 <h3>Individual Song Downloads</h3>
-                <p>Select specific songs from any album or playlist and download them directly to your computer. Full control over your collection.</p>
+                <p>Choose specific songs from any album or playlist to download them individually.</p>
             </div>
             <div class="feature">
                 <h3>High-Quality Audio</h3>
-                <p>Choose from multiple audio quality options (96kbps, 128kbps, 320kbps) to get the best sound for your needs.</p>
+                <p>Get your music in multiple quality options: 96kbps, 128kbps, and 320kbps.</p>
             </div>
             <div class="feature">
                 <h3>Automatic Organization</h3>
-                <p>SoulDown automatically organizes your downloads by artist and album, so you don’t have to worry about messy files.</p>
+                <p>Automatically organizes your downloads by artist and album for easy access.</p>
             </div>
             <div class="feature">
-                <h3>Album Art Downloads</h3>
-                <p>Download album covers and assign them to each song, so your music collection looks as good as it sounds.</p>
+                <h3>Album Art</h3>
+                <p>Download album covers and assign them to your music for a complete experience.</p>
             </div>
             <div class="feature">
                 <h3>Queue Management</h3>
-                <p>Add multiple albums to a queue, and download them in sequence. Monitor download progress for both individual and total queue.</p>
+                <p>Create a download queue to process multiple albums and tracks in sequence.</p>
             </div>
+            <div class="feature">
+                <h3>Open source</h3>
+                <p>All code is released under the Apache-2.0 license.</p>
+            </div>
+            <div class="feature">
+                <h3>Free and easy</h3>
+       	       	<p>SoulDown is completely free and easy to use.</p>
+       	    </div>
         </div>
-    </section>
-
-    <section>
-        <h2>Why Choose SoulDown?</h2>
-        <p>SoulDown is designed to make downloading YouTube music easier and more efficient. With an intuitive interface, advanced features, and complete customization options, it’s the perfect tool for both casual listeners and dedicated music collectors. Plus, it’s completely free and open source under the Apache 2.0 license!</p>
     </section>
 </main>
 
 <footer>
-    <p>&copy SoulDown - By <a href="https://s3rgi09.github.io" target="_blank">S3RGI09</a>.</p>
+    <p>&copy; SoulDown - By <a href="https://s3rgi09.github.io" target="_blank">S3RGI09</a>.</p>
 </footer>
 
 </body>
