@@ -1,0 +1,35 @@
+name: Build SoulDown for macOS
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # para lanzarlo manualmente
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build SoulDown binary
+        run: |
+          pyinstaller --onefile --windowed souldown.py
+
+      - name: Upload built binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: SoulDown-macOS
+          path: dist/souldown
