@@ -2,34 +2,50 @@ name: Build SoulDown for macOS
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch: # para lanzarlo manualmente
+    branches:
+      - main  # Ejecuta el flujo de trabajo cuando haya un push a la rama principal
+  pull_request:
+    branches:
+      - main  # También se ejecuta cuando se haga un pull request hacia la rama principal
 
 jobs:
-  build-macos:
-    runs-on: macos-latest
-
+  build:
+    runs-on: macos-latest  # Esto indica que usaremos el entorno de macOS para la compilación
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
+      # Paso 1: Configurar Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.9'  # Aquí puedes especificar la versión de Python que estás utilizando en tu proyecto
 
+      # Paso 2: Clonar el repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Paso 3: Instalar dependencias de Python
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt  # Instala todas las dependencias de tu proyecto
+
+      # Paso 4: Instalar PyInstaller
+      - name: Install PyInstaller
+        run: |
           pip install pyinstaller
 
-      - name: Build SoulDown binary
+      # Paso 5: Compilar el binario con PyInstaller
+      - name: Build the macOS binary
         run: |
-          pyinstaller --onefile --windowed souldown.py
+          pyinstaller --onefile --windowed souldown.py  # Aquí ajusta si deseas opciones adicionales en la compilación
 
-      - name: Upload built binary
+      # Paso 6: Listar los archivos generados en la carpeta dist
+      - name: List files in dist folder
+        run: ls -la ./dist  # Para verificar que el binario se generó correctamente
+
+      # Paso 7: Subir el binario como un artefacto (opcional)
+      - name: Upload macOS binary
         uses: actions/upload-artifact@v3
         with:
           name: SoulDown-macOS
-          path: dist/souldown
+          path: ./dist/SoulDown.app  # Ajusta esto según el nombre exacto del archivo generado
