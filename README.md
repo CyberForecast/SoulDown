@@ -1,6 +1,6 @@
-![Version](https://img.shields.io/badge/version-Beta3.0-blue)  
-![by](https://img.shields.io/badge/by-S3RGI09-orange)  
-![License](https://img.shields.io/badge/license-Apache2.0-green)  
+![Version](https://img.shields.io/badge/version-Beta3.0-orange)  
+![by](https://img.shields.io/badge/by-S3RGI09-red)  
+![License](https://img.shields.io/badge/license-Apache2.0-purple)  
 
 # SoulDown - S3RGI09  
 <img src="https://github.com/user-attachments/assets/6e1c5313-af7a-4a8e-9ef2-52825c9e577d" alt="souldown" width="200">  
