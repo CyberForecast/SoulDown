@@ -1,5 +1,5 @@
 ![Version](https://img.shields.io/badge/version-Beta3.0-orange)  
-![by](https://img.shields.io/badge/by-S3RGI09-red)  
+![by](https://img.shields.io/badge/by-S3RGI09-blue)  
 ![License](https://img.shields.io/badge/license-Apache2.0-purple)  
 
 # SoulDown - S3RGI09  
