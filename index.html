@@ -12,6 +12,60 @@
             color: #fff;
             line-height: 1.6;
         }
+
+        /* Estilos de la barra de anuncio */
+        .announcement-bar {
+            background-color: orange;
+            color: white;
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            white-space: nowrap;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .announcement-bar p {
+            margin: 0;
+            padding-right: 50px; /* Espacio para el botón */
+            animation: scroll-left 10s linear infinite;
+        }
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Estilos para el botón */
+        .announcement-bar .cta-button {
+            background-color: #fff;
+            color: orange;
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            transition: background-color 0.3s ease;
+        }
+        .announcement-bar .cta-button:hover {
+            background-color: #f8a200;
+        }
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #111;
+            color: #fff;
+            line-height: 1.6;
+        }
         header {
             position: relative;
             text-align: center;
@@ -139,7 +193,10 @@
     </style>
 </head>
 <body>
-
+<div class="announcement-bar">
+    <p>SoulDown - Stable 1.0 - New Features Coming Soon!</p>
+    <a href="https://github.com/S3RGI09/SoulDown/discussions/1" class="cta-button">Visit Announcement</a>
+</div>
 <header>
     <img class="logo" src="https://github.com/user-attachments/assets/6e1c5313-af7a-4a8e-9ef2-52825c9e577d" alt="SoulDown Logo">
     <p><strong>Music is Your Soul, Download It</strong></p>
