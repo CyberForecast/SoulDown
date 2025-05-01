@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-Beta3.0-orange)  
+![Version](https://img.shields.io/badge/version-Stable1.0-green)  
 ![by](https://img.shields.io/badge/by-S3RGI09-blue)  
 ![License](https://img.shields.io/badge/license-Apache2.0-purple)  
 
