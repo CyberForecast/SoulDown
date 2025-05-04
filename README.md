@@ -21,8 +21,8 @@
 - **Cover art download**: Automatically downloads and assigns album covers to each song.  
 - **Download queue management**: Add multiple albums to a queue and download them sequentially.  
 - **Progress bars**: View both individual and total queue download progress.  
-- **Customizable interface**: A graphical interface with a blue and black theme for a visually pleasant experience.  
-
+- **Customizable interface**: A graphical interface with a blue and black theme for a visually pleasant experience.
+- **Download video**: Allows you to download video in `MP4` or `AVI` at different qualities.
 ## System Requirements  
 
 - **Operating System**: Windows, macOS, or Linux with Python 3.x support.  
