@@ -9,7 +9,8 @@
 
 **You can access the website [here](https://s3rgi09.github.io/SoulDown/)**  
 
-![SoulDown linux](https://github.com/user-attachments/assets/bb899569-dad9-4ae3-ac8b-5751706e25f9)
+![SoulDown Linux](https://github.com/user-attachments/assets/c7661cc5-9ddf-4a38-851e-894079fc8d11)
+
 
 ## Main Features  
 
