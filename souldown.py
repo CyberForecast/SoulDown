@@ -1,188 +1,247 @@
+# -*- coding: utf-8 -*-
+"""
+SoulDown - Stable v1.0
+- By S3RGI09
+"""
 import os
 import re
-import yt_dlp
-import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
-from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, APIC
-import requests
+import uuid
 from io import BytesIO
+from pathlib import Path
 
-QUALITY_OPTIONS = {
-    "Low quality (96kbps)": "bestaudio[ext=m4a]/worstaudio[ext=mp3]/bestaudio[abr<=96]",
-    "Medium quality (128kbps)": "bestaudio[ext=m4a]/bestaudio[abr<=128]",
-    "High quality (320kbps)": "bestaudio[ext=m4a]/bestaudio/bestaudio[abr<=320]"
-}
+# For Wayland compatibility
+os.environ.setdefault('QT_QPA_PLATFORM', 'xcb')
 
-song_queue = []
+import requests
+import yt_dlp
+from mutagen.id3 import ID3, APIC, ID3NoHeaderError
+from mutagen.mp3 import MP3
+from PyQt5 import QtCore, QtWidgets, QtGui
 
+# Soportes
+AUDIO_EXTS = ['mp3', 'aac', 'opus']
+VIDEO_EXTS = ['mp4', 'avi']
 
-def add_to_queue():
-    url = url_entry.get()
-    quality = quality_var.get()
+class DownloadWorker(QtCore.QThread):
+    songProgress = QtCore.pyqtSignal(int, int)
+    fileProgress = QtCore.pyqtSignal(int)
+    finishedAll = QtCore.pyqtSignal()
+    errorOccurred = QtCore.pyqtSignal(str)
 
-    if not url:
-        messagebox.showerror("Error", "Please enter a YouTube URL")
-        return
+    def __init__(self, queue, output_folder):
+        super().__init__()
+        self.queue = queue
+        self.output = Path(output_folder)
+        self.temp = self.output / 'temp'
+        self.temp.mkdir(exist_ok=True)
+        self.current_progress = 0
 
-    if not quality:
-        messagebox.showerror("Error", "Please select an audio quality")
-        return
-
-    song_queue.append((url, quality))
-    update_list()
-    url_entry.delete(0, tk.END)
-
-
-def update_list():
-    queue_list.delete(0, tk.END)
-    for i, (url, quality) in enumerate(song_queue):
-        queue_list.insert(tk.END, f"{i+1}. {url} - {quality}")
-
-
-def download_queue():
-    if not song_queue:
-        messagebox.showerror("Error", "There are no songs in the queue")
-        return
-
-    folder = filedialog.askdirectory(title="Select the destination folder")
-    if not folder:
-        return
-
-    total_songs = len(song_queue)
-    song_progress["maximum"] = total_songs
-    global_progress["maximum"] = 100
-
-    for i, (url, quality) in enumerate(song_queue):
-        song_progress["value"] = i + 1
-        download_song(url, quality, folder)
-        root.update_idletasks()
-
-    messagebox.showinfo("Success", "All songs have been downloaded")
-    song_queue.clear()
-    update_list()
-    song_progress["value"] = 0
-    global_progress["value"] = 0
-
-
-def download_song(url, quality, folder):
-    ydl_opts = {
-        "format": QUALITY_OPTIONS[quality],
-        "outtmpl": os.path.join(folder, "%(title)s.%(ext)s"),
-        "writethumbnail": True,
-        "postprocessors": [
-            {"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": quality.split()[2]},
-            {"key": "EmbedThumbnail"},
-            {"key": "FFmpegMetadata"}
-        ],
-        "progress_hooks": [update_progress],
-        "noprogress": True,  # Prevents ANSI codes in output
-    }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-
-    download_cover(info, folder)
-    organize_files(folder)
-
-
-def update_progress(d):
-    if d["status"] == "downloading":
-        percentage = d.get("_percent_str", "0%")
-
-        # Remove ANSI color codes
-        percentage = re.sub(r"\x1b\[[0-9;]*m", "", percentage).strip("%")
-
-        try:
-            global_progress["value"] = float(percentage)
-            root.update_idletasks()
-        except ValueError:
-            print(f"Error converting percentage: {percentage}")
-
-
-def download_cover(info, folder):
-    thumbnail_url = info.get("thumbnail")
-    if not thumbnail_url:
-        return
-
-    try:
-        response = requests.get(thumbnail_url)
-        response.raise_for_status()
-        image_data = BytesIO(response.content)
-
-        for root_dir, _, files in os.walk(folder):
-            for file in files:
-                if file.endswith(".mp3"):
-                    file_path = os.path.join(root_dir, file)
-                    audio = MP3(file_path, ID3=ID3)
-                    audio.tags.add(APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=image_data.getvalue()))
-                    audio.save()
-    except Exception as e:
-        print(f"Error downloading cover: {e}")
-
-
-def organize_files(folder):
-    for root_dir, _, files in os.walk(folder):
-        for file in files:
-            if file.endswith(".mp3"):
-                file_path = os.path.join(root_dir, file)
+    def run(self):
+        expanded_queue = []
+        for url, ftype, ext, quality in self.queue:
+            # Check if it's a playlist
+            ydl_opts = {'quiet': True, 'extract_flat': 'in_playlist', 'force_generic_extractor': False}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 try:
-                    audio = MP3(file_path, ID3=ID3)
-                    artist = audio.tags.get("TPE1", "Unknown").text[0]
-                    album = audio.tags.get("TALB", "Unknown").text[0]
-
-                    album_path = os.path.join(folder, artist, album)
-                    os.makedirs(album_path, exist_ok=True)
-                    os.rename(file_path, os.path.join(album_path, file))
+                    info = ydl.extract_info(url, download=False)
+                    if 'entries' in info:
+                        for entry in info['entries']:
+                            expanded_queue.append((entry['url'], ftype, ext, quality))
+                    else:
+                        expanded_queue.append((url, ftype, ext, quality))
                 except Exception as e:
-                    print(f"Error organizing {file}: {e}")
+                    self.errorOccurred.emit(f"Error leyendo {url}: {e}")
 
+        total = len(expanded_queue)
+        for idx, (url, ftype, ext, quality) in enumerate(expanded_queue, start=1):
+            self.songProgress.emit(idx, total)
+            try:
+                self.download_item(url, ftype, ext, quality)
+            except Exception as e:
+                self.errorOccurred.emit(f"Error en {url}: {e}")
 
-root = tk.Tk()
-root.title("SoulDown - S3RGI09")
-root.geometry("850x450")
-root.configure(bg="#121212")
+        for f in self.temp.glob('*'): f.unlink()
+        self.temp.rmdir()
+        self.finishedAll.emit()
 
-style = ttk.Style()
-style.configure("TButton", font=("Arial", 12), background="#1E90FF", foreground="white")
-style.configure("TLabel", font=("Arial", 12), background="#121212", foreground="white")
-style.configure("TEntry", font=("Arial", 12), fieldbackground="#1E1E1E", foreground="white")
-style.configure("TListbox", font=("Arial", 12), background="#1E1E1E", foreground="white")
+    def download_item(self, url, ftype, ext, quality):
+        def hook(d):
+            if d.get('status') == 'downloading':
+                pct = d.get('_percent_str', '0%').strip('%')
+                try:
+                    val = int(float(pct))
+                    self.fileProgress.emit(val)
+                except:
+                    pass
 
-# Configure grid
-root.grid_rowconfigure(0, weight=1)
-root.grid_rowconfigure(1, weight=1)
-root.grid_rowconfigure(2, weight=1)
-root.grid_rowconfigure(3, weight=1)
-root.grid_rowconfigure(4, weight=1)
-root.grid_rowconfigure(5, weight=1)
-root.grid_rowconfigure(6, weight=1)
-root.grid_rowconfigure(7, weight=1)
-root.grid_columnconfigure(0, weight=1)
-root.grid_columnconfigure(1, weight=3)
+        class Logger:
+            def debug(self, msg):
+                match = re.search(r'\[download\]\s+(\d{1,3}\.\d+)%', msg)
+                if match:
+                    try:
+                        pct = int(float(match.group(1)))
+                        self.fileProgress.emit(pct)
+                    except:
+                        pass
+            def warning(self, msg): pass
+            def error(self, msg): pass
 
-ttk.Label(root, text="Song URL:").grid(row=0, column=0, sticky="w", padx=10, pady=5)
-url_entry = ttk.Entry(root, width=50)
-url_entry.grid(row=0, column=1, padx=10, pady=5)
+        ydl_opts = {
+            'quiet': True,
+            'logger': Logger(),
+            'progress_hooks': [hook],
+            'outtmpl': str(self.temp / '%(id)s.%(ext)s'),
+        }
+        if ftype == 'Audio':
+            ydl_opts['format'] = 'bestaudio/best'
+            ydl_opts['postprocessors'] = [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': ext,
+                'preferredquality': quality
+            }]
+        else:
+            ydl_opts['format'] = 'bestvideo+bestaudio/best'
+            ydl_opts['merge_output_format'] = ext
 
-ttk.Label(root, text="Select audio quality:").grid(row=1, column=0, sticky="w", padx=10, pady=5)
-quality_var = tk.StringVar(value="Low quality (96kbps)")  # Corrected initial value
-quality_menu = ttk.OptionMenu(root, quality_var, "Medium quality (128kbps)", *QUALITY_OPTIONS.keys())
-quality_menu.grid(row=1, column=1, padx=10, pady=5)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            try:
+                info = ydl.extract_info(url, download=True)
+            except yt_dlp.utils.DownloadError:
+                if ftype == 'Audio':
+                    ydl_opts['format'] = 'bestaudio'
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl2:
+                        info = ydl2.extract_info(url, download=True)
+                else:
+                    raise
 
-ttk.Label(root, text="Download queue:").grid(row=2, column=0, sticky="w", padx=10, pady=5)
-queue_list = tk.Listbox(root, width=70, height=6, bg="#1E1E1E", fg="white")
-queue_list.grid(row=2, column=1, padx=10, pady=5)
+        file_id = info['id']
+        src = next(self.temp.glob(f"{file_id}.*"))
+        if ftype == 'Audio':
+            self.embed_cover(info, src)
+        self.organize(info, src)
 
-ttk.Button(root, text="Add to queue", command=add_to_queue).grid(row=3, column=0, columnspan=2, pady=5)
-ttk.Button(root, text="Download queue", command=download_queue).grid(row=4, column=0, columnspan=2, pady=5)
+    def embed_cover(self, info, path):
+        thumb = info.get('thumbnail')
+        if not thumb: return
+        try:
+            data = requests.get(thumb, timeout=10).content
+            audio = MP3(path, ID3=ID3)
+            try: audio.add_tags()
+            except ID3NoHeaderError: pass
+            audio.tags.add(APIC(3, 'image/jpeg', 3, 'Cover', data))
+            audio.save()
+        except: pass
 
-ttk.Label(root, text="Total progress:").grid(row=5, column=0, sticky="w", padx=10, pady=5)
-song_progress = ttk.Progressbar(root, length=400)
-song_progress.grid(row=5, column=1, padx=10, pady=5)
+    def organize(self, info, src):
+        title = info.get('title') or src.stem
+        artist = info.get('artist') or info.get('uploader', 'Unknown')
+        main = re.split(r'\s+ft\.?\s+', artist, flags=re.I)[0]
+        album = info.get('album') or 'Unknown Album'
+        dest_dir = self.output / main / album
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest = dest_dir / f"{main} - {album} - {title}{src.suffix}"
+        if dest.exists():
+            dest = dest_dir / f"{dest.stem}_{uuid.uuid4().hex[:6]}{src.suffix}"
+        src.rename(dest)
 
-ttk.Label(root, text="Song progress:").grid(row=6, column=0, sticky="w", padx=10, pady=5)
-global_progress = ttk.Progressbar(root, length=400)
-global_progress.grid(row=6, column=1, padx=10, pady=5)
+class MainWindow(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("SoulDown - Stable v2.3")
+        self.resize(800, 500)
+        self.apply_styles()
+        self.queue = []
+        self.setup_ui()
 
-root.mainloop()
+    def apply_styles(self):
+        self.setStyleSheet("""
+            QWidget { background-color: #000000; color: #FFFFFF; }
+            QLineEdit, QComboBox, QListWidget { background-color: #121212; selection-background-color: #1E90FF; }
+            QPushButton { background-color: #1E90FF; color: #000000; border-radius: 5px; padding: 5px; }
+            QPushButton:hover { background-color: #5599FF; }
+            QProgressBar { background-color: #121212; border: 1px solid #1E90FF; border-radius: 5px; }
+            QProgressBar::chunk { background-color: #1E90FF; }
+        """)
+
+    def setup_ui(self):
+        grid = QtWidgets.QGridLayout(self)
+        grid.addWidget(QtWidgets.QLabel("URL:"), 0, 0)
+        self.url_input = QtWidgets.QLineEdit()
+        grid.addWidget(self.url_input, 0, 1, 1, 3)
+        self.type_box = QtWidgets.QComboBox(); self.type_box.addItems(['Audio', 'Video'])
+        self.ext_box = QtWidgets.QComboBox(); self.ext_box.addItems(AUDIO_EXTS)
+        self.qual_box = QtWidgets.QComboBox(); self.qual_box.addItems(['Low', 'Medium', 'High'])
+        grid.addWidget(self.type_box, 1, 0)
+        grid.addWidget(self.ext_box, 1, 1)
+        grid.addWidget(self.qual_box, 1, 2)
+        self.add_btn = QtWidgets.QPushButton("Add to Queue")
+        grid.addWidget(self.add_btn, 1, 3)
+        grid.addWidget(QtWidgets.QLabel("Queue:"), 2, 0)
+        self.queue_list = QtWidgets.QListWidget()
+        grid.addWidget(self.queue_list, 3, 0, 1, 4)
+        self.download_btn = QtWidgets.QPushButton("Download All")
+        grid.addWidget(self.download_btn, 4, 0, 1, 4)
+        grid.addWidget(QtWidgets.QLabel("Overall Progress:"), 5, 0)
+        self.overall_pb = QtWidgets.QProgressBar()
+        grid.addWidget(self.overall_pb, 5, 1, 1, 3)
+        grid.addWidget(QtWidgets.QLabel("File Progress:"), 6, 0)
+        self.file_pb = QtWidgets.QProgressBar()
+        grid.addWidget(self.file_pb, 6, 1, 1, 3)
+        self.add_btn.clicked.connect(self.add_to_queue)
+        self.download_btn.clicked.connect(self.start_download)
+        self.type_box.currentTextChanged.connect(self.update_ext)
+
+    def update_ext(self, text):
+        self.ext_box.clear(); self.qual_box.clear()
+        if text == 'Audio':
+            self.ext_box.addItems(AUDIO_EXTS)
+            self.qual_box.addItems(['Low', 'Medium', 'High'])
+        else:
+            self.ext_box.addItems(VIDEO_EXTS)
+            self.qual_box.addItems(['360p', '720p', '1080p'])
+
+    def add_to_queue(self):
+        url = self.url_input.text().strip()
+        if not url:
+            QtWidgets.QMessageBox.warning(self, "Error", "Enter URL")
+            return
+        ftype = self.type_box.currentText()
+        ext = self.ext_box.currentText()
+        quality = self.qual_box.currentText()
+        self.queue.append((url, ftype, ext, quality))
+        self.queue_list.addItem(f"{ftype} | {ext} | {quality} | {url}")
+        self.url_input.clear()
+
+    def start_download(self):
+        if not self.queue:
+            QtWidgets.QMessageBox.warning(self, "Error", "Queue empty")
+            return
+        folder = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Folder")
+        if not folder:
+            return
+        self.overall_pb.setMaximum(1)  # Placeholder
+        self.file_pb.setMaximum(100)
+        self.worker = DownloadWorker(self.queue, folder)
+        self.worker.songProgress.connect(self.update_overall)
+        self.worker.fileProgress.connect(lambda p: self.file_pb.setValue(p))
+        self.worker.errorOccurred.connect(lambda e: QtWidgets.QMessageBox.warning(self, 'Error', e))
+        self.worker.finishedAll.connect(self.download_finished)
+        self.download_btn.setEnabled(False)
+        self.worker.start()
+
+    def update_overall(self, current, total):
+        self.overall_pb.setMaximum(total)
+        self.overall_pb.setValue(current)
+
+    def download_finished(self):
+        QtWidgets.QMessageBox.information(self, "Done", "All downloads completed")
+        self.queue.clear(); self.queue_list.clear()
+        self.download_btn.setEnabled(True)
+        self.overall_pb.reset(); self.file_pb.reset()
+
+if __name__ == '__main__':
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
